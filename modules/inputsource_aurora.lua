@@ -7,20 +7,34 @@ local box_height = 23
 local box_alpha = 0.65
 local GREEN = hs.drawing.color.osx_green
 
+-- 입력소스 표시를 제외할 앱 bundleID 목록
+local excludedBundleIDs = {
+    "com.blizzard.worldofwarcraft",
+}
+
+local function isExcludedApp(appObj)
+    if not appObj then return false end
+    local bundleID = appObj:bundleID()
+    for _, id in ipairs(excludedBundleIDs) do
+        if bundleID == id then
+            return true
+        end
+    end
+    return false
+end
+
 -- 입력소스 변경 이벤트에 이벤트 리스너를 달아준다
 hs.keycodes.inputSourceChanged(function()
-    disable_show()
+    removeGreenBars()
     if hs.keycodes.currentSourceID() ~= inputEnglish then
-        enable_show()
+        showGreenBars()
     end
 end)
 
-function enable_show()
-    -- World of Warcraft가 frontmost 앱이면 그리지 않음
+function showGreenBars()
+    -- 제외 앱이면 그리지 않음
     local frontmostApp = hs.application.frontmostApplication()
-    if frontmostApp and frontmostApp:bundleID() == "com.blizzard.worldofwarcraft" then
-        return
-    end
+    if isExcludedApp(frontmostApp) then return end
 
     reset_boxes()
     hs.fnutils.each(hs.screen.allScreens(), function(scr)
@@ -37,7 +51,7 @@ function enable_show()
     end)
 end
 
-function disable_show()
+function removeGreenBars()
     hs.fnutils.each(boxes, function(box)
         if box ~= nil then
             box:delete()
@@ -66,4 +80,3 @@ function draw_rectangle(target_draw, x, y, width, height, fill_color)
   target_draw:setBehavior(hs.drawing.windowBehaviors.canJoinAllSpaces)
   target_draw:show()
 end
-
