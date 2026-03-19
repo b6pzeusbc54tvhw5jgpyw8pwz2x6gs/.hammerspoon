@@ -1,3 +1,5 @@
+-- 한글일때 화면 상단 하단에 녹색 띠를 보여주는 모듈.
+
 local boxes = {}
 -- 자신이 사용하고 있는 English 인풋 소스 이름을 넣어준다
 local inputEnglish = "com.apple.keylayout.ABC"
@@ -14,6 +16,12 @@ hs.keycodes.inputSourceChanged(function()
 end)
 
 function enable_show()
+    -- World of Warcraft가 frontmost 앱이면 그리지 않음
+    local frontmostApp = hs.application.frontmostApplication()
+    if frontmostApp and frontmostApp:bundleID() == "com.blizzard.worldofwarcraft" then
+        return
+    end
+
     reset_boxes()
     hs.fnutils.each(hs.screen.allScreens(), function(scr)
         local frame = scr:fullFrame()
@@ -22,10 +30,10 @@ function enable_show()
         draw_rectangle(box, frame.x, frame.y, frame.w, box_height, GREEN)
         table.insert(boxes, box)
 
-        -- 이 부분의 주석을 풀면 화면 아래쪽에도 보여준다
-        -- local box2 = newBox()
-        -- draw_rectangle(box2, frame.x, frame.y + frame.h - 10, frame.w, box_height, GREEN)
-        -- table.insert(boxes, box2)
+        -- 화면 아래쪽에도 보여준다
+        local box2 = newBox()
+        draw_rectangle(box2, frame.x, frame.y + frame.h - 20, frame.w, box_height, GREEN)
+        table.insert(boxes, box2)
     end)
 end
 
@@ -58,3 +66,4 @@ function draw_rectangle(target_draw, x, y, width, height, fill_color)
   target_draw:setBehavior(hs.drawing.windowBehaviors.canJoinAllSpaces)
   target_draw:show()
 end
+

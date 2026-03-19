@@ -41,3 +41,4 @@ vimSwitchMode = hs.hotkey.bind({'control'}, 'c', function()
     hs.eventtap.keyStroke({'control'}, 'c')
     vimSwitchMode:enable()
 end)
+
