@@ -2,6 +2,7 @@ require('modules.inputsource_aurora')
 require('modules.korean_alert_on_focus')
 require('modules.switch_inputsource_to_ABC_when_enter_vim_normal_mode')
 require('modules.window_count_alert')
+require('modules.switch_to_abc_on_iterm2')
 
 -- World of Warcraft 모듈 로드
 local wow = require("modules.worldofwarcraft")
