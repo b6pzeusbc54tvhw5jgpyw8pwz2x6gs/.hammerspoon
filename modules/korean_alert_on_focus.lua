@@ -5,6 +5,7 @@ local inputEnglish = "com.apple.keylayout.ABC"
 -- 알림을 제외할 앱 bundleID 목록
 local excludedBundleIDs = {
     "com.blizzard.worldofwarcraft",
+    "com.googlecode.iterm2",
 }
 
 local function isExcludedApp(appObj)
