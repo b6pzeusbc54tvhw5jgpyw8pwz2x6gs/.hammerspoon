@@ -19,6 +19,11 @@ local function isExcludedApp(appObj)
     return false
 end
 
+local koreanAlertStyle = hs.alert.defaultStyle
+koreanAlertStyle.textSize = 120
+koreanAlertStyle.strokeColor = { alpha = 0 }
+koreanAlertStyle.fillColor = { alpha = 0 }
+
 local wf = hs.window.filter.new():setDefaultFilter()
 wf:subscribe(hs.window.filter.windowFocused, function(window, appName, event)
     print("[korean_alert_on_focus] windowFocused: appName=" .. tostring(appName) .. ", window=" .. tostring(window))
@@ -31,7 +36,7 @@ wf:subscribe(hs.window.filter.windowFocused, function(window, appName, event)
     print("[korean_alert_on_focus] inputSource=" .. tostring(currentSource))
     if currentSource ~= inputEnglish then
         print("[korean_alert_on_focus] Korean detected, showing alert")
-        hs.alert.show("한글", 1)
+        hs.alert.show("🇰🇷", koreanAlertStyle, 1)
     end
 end)
 print("[korean_alert_on_focus] windowFilter subscribed")
