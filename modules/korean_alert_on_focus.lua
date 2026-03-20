@@ -19,10 +19,11 @@ local function isExcludedApp(appObj)
     return false
 end
 
-local koreanAlertStyle = hs.alert.defaultStyle
-koreanAlertStyle.textSize = 120
-koreanAlertStyle.strokeColor = { alpha = 0 }
-koreanAlertStyle.fillColor = { alpha = 0 }
+local koreanAlertStyle = {
+    textSize = 120,
+    strokeColor = { alpha = 0 },
+    fillColor = { alpha = 0 },
+}
 
 local wf = hs.window.filter.new():setDefaultFilter()
 wf:subscribe(hs.window.filter.windowFocused, function(window, appName, event)
