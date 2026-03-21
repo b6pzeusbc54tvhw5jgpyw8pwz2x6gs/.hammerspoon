@@ -38,6 +38,9 @@ wf:subscribe(hs.window.filter.windowFocused, function(window, appName, event)
     if currentSource ~= inputEnglish then
         print("[korean_alert_on_focus] Korean detected, showing alert")
         hs.alert.show("🇰🇷", koreanAlertStyle, 1)
+    else
+        print("[korean_alert_on_focus] English detected, showing alert")
+        hs.alert.show("🇺🇸", koreanAlertStyle, 1)
     end
 end)
 print("[korean_alert_on_focus] windowFilter subscribed")
