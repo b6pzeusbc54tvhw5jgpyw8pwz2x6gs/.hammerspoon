@@ -20,9 +20,10 @@ local function checkWindows()
     end
 end
 
-M.watcher = hs.window.filter.default:subscribe({
-    hs.window.filter.windowCreated,
-    hs.window.filter.windowDestroyed,
-}, checkWindows)
+local wf = hs.window.filter.new():setDefaultFilter()
+M.watcher = wf:subscribe(
+    hs.window.filter.windowFocused,
+    checkWindows
+)
 
 return M
