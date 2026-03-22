@@ -260,12 +260,28 @@ local function hideOverlay()
     end
 end
 
--- Detect modifier holds to show overlay
+-- Delay before showing overlay (seconds)
+local SHOW_DELAY = 0.5
+local pendingTimer = nil
+local pendingMode = nil
+
+local function cancelPending()
+    if pendingTimer then
+        pendingTimer:stop()
+        pendingTimer = nil
+    end
+    pendingMode = nil
+end
+
+local lastFlags = {}
+
+-- Detect modifier holds to show overlay (with delay)
 _hyperOverlayTap = hs.eventtap.new({hs.eventtap.event.types.flagsChanged}, function(event)
     local flags = event:getFlags()
-    local isHyper = flags.cmd and flags.alt and flags.ctrl and flags.shift
-    local isOptionOnly = flags.alt and not flags.cmd and not flags.ctrl and not flags.shift
-    local isCmdShift = flags.cmd and flags.shift and not flags.alt and not flags.ctrl
+    lastFlags = flags
+    local isHyper = flags.cmd and flags.alt and flags.ctrl and flags.shift and not flags.fn
+    local isOptionOnly = flags.alt and not flags.cmd and not flags.ctrl and not flags.shift and not flags.fn
+    local isCmdShift = flags.cmd and flags.shift and not flags.alt and not flags.ctrl and not flags.fn
 
     -- Determine desired mode (most specific first)
     local desiredMode = nil
@@ -281,12 +297,34 @@ _hyperOverlayTap = hs.eventtap.new({hs.eventtap.event.types.flagsChanged}, funct
         if overlayCanvas and currentMode ~= desiredMode then
             pcall(hideOverlay)
         end
-        if not overlayCanvas then
-            local ok, err = pcall(showOverlay, flags, desiredMode)
-            if not ok then print("[hyper_overlay] show error: " .. tostring(err)) end
+        if not overlayCanvas and pendingMode ~= desiredMode then
+            -- Start delay timer for this mode
+            cancelPending()
+            pendingMode = desiredMode
+            local capturedMode = desiredMode
+            pendingTimer = hs.timer.doAfter(SHOW_DELAY, function()
+                pendingTimer = nil
+                pendingMode = nil
+                -- Re-check last known modifier state before showing
+                local stillValid = false
+                if capturedMode == "hyper" then
+                    stillValid = lastFlags.cmd and lastFlags.alt and lastFlags.ctrl and lastFlags.shift
+                elseif capturedMode == "option" then
+                    stillValid = lastFlags.alt and not lastFlags.cmd and not lastFlags.ctrl and not lastFlags.shift
+                elseif capturedMode == "cmd_shift" then
+                    stillValid = lastFlags.cmd and lastFlags.shift and not lastFlags.alt and not lastFlags.ctrl
+                end
+                if stillValid and not overlayCanvas then
+                    local ok, err = pcall(showOverlay, lastFlags, capturedMode)
+                    if not ok then print("[hyper_overlay] show error: " .. tostring(err)) end
+                end
+            end)
         end
-    elseif overlayCanvas then
-        pcall(hideOverlay)
+    else
+        cancelPending()
+        if overlayCanvas then
+            pcall(hideOverlay)
+        end
     end
     return false
 end)
