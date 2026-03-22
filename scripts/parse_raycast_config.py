@@ -40,6 +40,66 @@ def decrypt_rayconfig(filepath, password):
     return json.loads(gzip.decompress(result.stdout[16:]))
 
 
+# Friendly label mappings for builtin commands and known extensions
+LABEL_MAP = {
+    'calendar_schedule': 'Calendar',
+    'raycastNotes_toggle': 'Notes',
+    'searchMenuItems': 'Menu Search',
+    'toggleSystemAppearance': 'Dark Mode',
+    'translate': 'Translate',
+    'snippets_search': 'Snippets',
+    'confetti': 'Confetti',
+    'calculator': 'Calculator',
+    'clipboard_history': 'Clipboard',
+    'windowManagement': 'Windows',
+}
+
+EXTENSION_LABEL_MAP = {
+    'do-not-disturb': 'DND',
+    'google-chrome': 'Tab Search',
+    'korean-spell-checker': 'Spell Check',
+    'youtube-shorts-to-normal-video-page': 'YT Shorts',
+    'color-picker': 'Color Picker',
+    'brew': 'Homebrew',
+    'github': 'GitHub',
+    'linear': 'Linear',
+    'slack-status': 'Slack Status',
+}
+
+# Friendly app name overrides
+APP_LABEL_MAP = {
+    'Google Chrome': 'Chrome',
+    'zoom.us': 'Zoom',
+    'Screen Sharing': 'Screen Share',
+    'YouTube Music': 'YT Music',
+}
+
+
+def _clean_app_label(app_name):
+    """Clean up app name for display."""
+    return APP_LABEL_MAP.get(app_name, app_name)
+
+
+def _clean_command_label(key_id):
+    """Generate a friendly label from a command/extension key ID."""
+    # Check builtin commands
+    name = key_id.replace('builtin_command_', '')
+    if name in LABEL_MAP:
+        return LABEL_MAP[name]
+
+    # Check extensions
+    ext_name = key_id.replace('extension_', '').split('.')[0]
+    if ext_name in EXTENSION_LABEL_MAP:
+        return EXTENSION_LABEL_MAP[ext_name]
+
+    # Fallback: clean up the name
+    name = ext_name.replace('-', ' ').replace('_', ' ').title()
+    # Truncate if too long
+    if len(name) > 12:
+        name = name[:11] + '…'
+    return name
+
+
 def extract_bindings(data):
     """Extract Hyper key bindings from Raycast config data."""
     items = data.get('builtin_package_rootSearch', {}).get('rootSearch', [])
@@ -62,19 +122,25 @@ def extract_bindings(data):
 
         if item_type == 'systemApp' and path:
             app_name = path.rstrip('/').split('/')[-1].replace('.app', '')
-            binding['label'] = app_name
+            binding['label'] = _clean_app_label(app_name)
             binding['icon'] = key_id  # bundle ID
             if '~' in path or 'Chrome Apps' in path:
                 binding['appPath'] = path
         elif item_type in ('command', 'nodeCommand'):
-            name = key_id.replace('builtin_command_', '').replace('extension_', '').split('.')[0]
-            binding['label'] = name
+            binding['label'] = _clean_command_label(key_id)
         elif item_type == 'quicklink':
-            binding['label'] = 'Slack Ch' if 'slack://' in path else 'Link'
+            if 'slack://' in path:
+                binding['label'] = 'Slack Ch'
+            elif 'notion://' in path or 'notion.so' in path:
+                binding['label'] = 'Notion'
+            elif 'linear://' in path or 'linear.app' in path:
+                binding['label'] = 'Linear'
+            else:
+                binding['label'] = 'Link'
         elif item_type == 'aiCommand':
             binding['label'] = 'AI Cmd'
         else:
-            binding['label'] = key_id[:20]
+            binding['label'] = key_id[:12]
 
         bindings[key] = binding
 

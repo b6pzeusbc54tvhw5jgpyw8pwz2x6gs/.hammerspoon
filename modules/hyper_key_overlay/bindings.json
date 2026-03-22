@@ -1,26 +1,87 @@
 {
-  "a": {"label": "Chrome", "icon": "com.google.Chrome"},
-  "s": {"label": "Slack", "icon": "com.tinyspeck.slackmacgap"},
-  "c": {"label": "Cursor", "icon": "com.todesktop.230313mzl4w4u92"},
-  "t": {"label": "iTerm", "icon": "com.googlecode.iterm2"},
-  "e": {"label": "Finder", "icon": "com.apple.finder"},
-  "b": {"label": "Obsidian", "icon": "md.obsidian"},
-  "k": {"label": "KakaoTalk", "icon": "com.kakao.KakaoTalkMac"},
-  "j": {"label": "Screen Share", "icon": "com.apple.ScreenSharing"},
-  "z": {"label": "Zoom", "icon": "us.zoom.xos"},
-  "m": {"label": "YT Music", "icon": "com.google.Chrome.app.cinhimbnkkaeohfgghhklpknlkffjgod", "appPath": "~/Applications/Chrome Apps.localized/YouTube Music.app"},
-  "h": {"label": "whooing", "icon": "com.google.Chrome.app.jojfeaelenjpnajeopdnlocndkagmehh", "appPath": "~/Applications/Chrome Apps.localized/whooing.app"},
-  "o": {"label": "Notes"},
-  "p": {"label": "AI Cmd"},
-  "r": {"label": "Translate"},
-  "u": {"label": "Menu Search"},
-  "y": {"label": "Calendar"},
-  "i": {"label": "Spell Check"},
-  "g": {"label": "Tab Search"},
-  "1": {"label": "Slack Ch"},
-  "2": {"label": "Slack Ch"},
-  "5": {"label": "YT Shorts"},
-  "=": {"label": "DND"},
-  "]": {"label": "Dark Mode"},
-  "0": {"label": "Input Flag"}
+  "2": {
+    "label": "Slack Ch"
+  },
+  "1": {
+    "label": "Slack Ch"
+  },
+  "i": {
+    "label": "Spell Check"
+  },
+  "p": {
+    "label": "AI Cmd"
+  },
+  "c": {
+    "label": "Cursor",
+    "icon": "com.todesktop.230313mzl4w4u92"
+  },
+  "e": {
+    "label": "Finder",
+    "icon": "com.apple.finder"
+  },
+  "a": {
+    "label": "Chrome",
+    "icon": "com.google.Chrome"
+  },
+  "k": {
+    "label": "KakaoTalk",
+    "icon": "com.kakao.KakaoTalkMac"
+  },
+  "y": {
+    "label": "Calendar"
+  },
+  "b": {
+    "label": "Obsidian",
+    "icon": "md.obsidian"
+  },
+  "o": {
+    "label": "Notes"
+  },
+  "j": {
+    "label": "Screen Share",
+    "icon": "com.apple.ScreenSharing"
+  },
+  "u": {
+    "label": "Menu Search"
+  },
+  "g": {
+    "label": "Tab Search"
+  },
+  "s": {
+    "label": "Slack",
+    "icon": "com.tinyspeck.slackmacgap"
+  },
+  "=": {
+    "label": "DND"
+  },
+  "]": {
+    "label": "Dark Mode"
+  },
+  "r": {
+    "label": "Translate"
+  },
+  "m": {
+    "label": "YT Music",
+    "icon": "com.google.Chrome.app.cinhimbnkkaeohfgghhklpknlkffjgod",
+    "appPath": "~/Applications/Chrome Apps.localized/YouTube Music.app"
+  },
+  "5": {
+    "label": "YT Shorts"
+  },
+  "t": {
+    "label": "iTerm",
+    "icon": "com.googlecode.iterm2"
+  },
+  "h": {
+    "label": "whooing",
+    "icon": "com.google.Chrome.app.jojfeaelenjpnajeopdnlocndkagmehh",
+    "appPath": "~/Applications/Chrome Apps.localized/whooing.app"
+  },
+  "z": {
+    "label": "Zoom",
+    "icon": "us.zoom.xos"
+  },
+  "0": {
+    "label": "Input Flag"
+  }
 }

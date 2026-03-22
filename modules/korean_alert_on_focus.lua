@@ -27,20 +27,12 @@ local koreanAlertStyle = {
 
 local wf = hs.window.filter.new():setDefaultFilter()
 wf:subscribe(hs.window.filter.windowFocused, function(window, appName, event)
-    print("[korean_alert_on_focus] windowFocused: appName=" .. tostring(appName) .. ", window=" .. tostring(window))
     local app = window and window:application()
-    if isExcludedApp(app) then
-        print("[korean_alert_on_focus] excluded app, skipping")
-        return
-    end
+    if isExcludedApp(app) then return end
     local currentSource = hs.keycodes.currentSourceID()
-    print("[korean_alert_on_focus] inputSource=" .. tostring(currentSource))
     if currentSource ~= inputEnglish then
-        print("[korean_alert_on_focus] Korean detected, showing alert")
         hs.alert.show("🇰🇷", koreanAlertStyle, 1)
     else
-        print("[korean_alert_on_focus] English detected, showing alert")
         hs.alert.show("🇺🇸", koreanAlertStyle, 1)
     end
 end)
-print("[korean_alert_on_focus] windowFilter subscribed")

@@ -8,11 +8,11 @@ local image = hs.image
 
 -- Configuration
 local LAYOUT_NAME = "magic_keyboard_us"  -- change this to switch keyboard layout
-local KEY_SIZE = 48
-local KEY_GAP = 4
-local PADDING = 20
-local TITLE_HEIGHT = 30
-local CORNER_RADIUS = 8
+local KEY_SIZE = 144
+local KEY_GAP = 8
+local PADDING = 40
+local TITLE_HEIGHT = 60
+local CORNER_RADIUS = 16
 
 -- Colors
 local COLORS = {
@@ -115,9 +115,9 @@ local function showOverlay()
     -- Title
     overlayCanvas[idx] = {
         type = "text",
-        frame = {x = PADDING, y = 8, w = cw - PADDING * 2, h = TITLE_HEIGHT},
+        frame = {x = PADDING, y = 12, w = cw - PADDING * 2, h = TITLE_HEIGHT},
         text = styledtext.new("\u{2303}\u{2325}\u{21E7}\u{2318} Hyper Key Shortcuts", {
-            font = {name = ".AppleSystemUIFont", size = 14},
+            font = {name = ".AppleSystemUIFont", size = 30},
             color = COLORS.title,
             paragraphStyle = {alignment = "center"},
         }),
@@ -142,12 +142,12 @@ local function showOverlay()
             local icon = getIcon(binding)
             if icon then
                 -- App icon
-                local iconSize = 24
+                local iconSize = 72
                 overlayCanvas[idx] = {
                     type = "image",
                     frame = {
                         x = pos.x + PADDING + (pos.w - iconSize) / 2,
-                        y = pos.y + PADDING + 3,
+                        y = pos.y + PADDING + 8,
                         w = iconSize, h = iconSize,
                     },
                     image = icon,
@@ -157,9 +157,9 @@ local function showOverlay()
                 -- Label below icon
                 overlayCanvas[idx] = {
                     type = "text",
-                    frame = {x = pos.x + PADDING + 1, y = pos.y + PADDING + 28, w = pos.w - 2, h = 18},
+                    frame = {x = pos.x + PADDING + 2, y = pos.y + PADDING + 84, w = pos.w - 4, h = 50},
                     text = styledtext.new(binding.label, {
-                        font = {name = ".AppleSystemUIFont", size = 8},
+                        font = {name = ".AppleSystemUIFont", size = 20},
                         color = COLORS.textBright,
                         paragraphStyle = {alignment = "center", lineBreak = "truncateTail"},
                     }),
@@ -169,9 +169,9 @@ local function showOverlay()
                 -- Command label (no icon)
                 overlayCanvas[idx] = {
                     type = "text",
-                    frame = {x = pos.x + PADDING + 2, y = pos.y + PADDING + 4, w = pos.w - 4, h = 22},
+                    frame = {x = pos.x + PADDING + 4, y = pos.y + PADDING + 15, w = pos.w - 8, h = 60},
                     text = styledtext.new(binding.label, {
-                        font = {name = ".AppleSystemUIFont", size = 10},
+                        font = {name = ".AppleSystemUIFont", size = 22},
                         color = COLORS.textBright,
                         paragraphStyle = {alignment = "center", lineBreak = "truncateTail"},
                     }),
@@ -181,9 +181,9 @@ local function showOverlay()
                 -- Key hint below
                 overlayCanvas[idx] = {
                     type = "text",
-                    frame = {x = pos.x + PADDING, y = pos.y + PADDING + 28, w = pos.w, h = 16},
+                    frame = {x = pos.x + PADDING, y = pos.y + PADDING + 86, w = pos.w, h = 44},
                     text = styledtext.new(pos.label, {
-                        font = {name = ".AppleSystemUIFont", size = 9},
+                        font = {name = ".AppleSystemUIFont", size = 22},
                         color = COLORS.textHint,
                         paragraphStyle = {alignment = "center"},
                     }),
@@ -194,9 +194,9 @@ local function showOverlay()
             -- Unbound key
             overlayCanvas[idx] = {
                 type = "text",
-                frame = {x = pos.x + PADDING, y = pos.y + PADDING + 14, w = pos.w, h = 20},
+                frame = {x = pos.x + PADDING, y = pos.y + PADDING + 45, w = pos.w, h = 54},
                 text = styledtext.new(pos.label, {
-                    font = {name = ".AppleSystemUIFont", size = 14},
+                    font = {name = ".AppleSystemUIFont", size = 34},
                     color = COLORS.textDim,
                     paragraphStyle = {alignment = "center"},
                 }),
@@ -231,14 +231,6 @@ _hyperOverlayTap = hs.eventtap.new({hs.eventtap.event.types.flagsChanged}, funct
 end)
 _hyperOverlayTap:start()
 
--- Also hide on keyDown (user is pressing a shortcut key)
-_hyperOverlayKeyTap = hs.eventtap.new({hs.eventtap.event.types.keyDown}, function(event)
-    if overlayCanvas then
-        pcall(hideOverlay)
-    end
-    return false
-end)
-_hyperOverlayKeyTap:start()
 
 print("[hyper_overlay] module loaded")
 
