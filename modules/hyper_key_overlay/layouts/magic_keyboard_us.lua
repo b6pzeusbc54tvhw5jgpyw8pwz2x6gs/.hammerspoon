@@ -28,10 +28,21 @@ return {
         },
         -- Bottom alpha row
         {
-            {key="shift_l", label="\u{21E7}", w=2.25}, {key="z", w=1}, {key="x", w=1},
+            {key="shift_l", label="\u{21E7}", w=2.25, modifier="shift_l"}, {key="z", w=1}, {key="x", w=1},
             {key="c", w=1}, {key="v", w=1}, {key="b", w=1}, {key="n", w=1},
             {key="m", w=1}, {key=",", w=1}, {key=".", w=1}, {key="/", w=1},
             {key="shift_r", label="\u{21E7}", w=2.25},
+        },
+        -- Modifier row
+        {
+            {key="fn", label="fn", w=1.25},
+            {key="ctrl_l", label="\u{2303}", w=1.25, modifier="ctrl_l"},
+            {key="alt_l", label="\u{2325}", w=1.25, modifier="alt_l"},
+            {key="cmd_l", label="\u{2318}", w=1.5, modifier="cmd_l"},
+            {key="space", label="", w=5.25},
+            {key="cmd_r", label="\u{2318}", w=1.5},
+            {key="alt_r", label="\u{2325}", w=1.25},
+            {key="left", label="\u{25C0}", w=1.25},
         },
     },
 }

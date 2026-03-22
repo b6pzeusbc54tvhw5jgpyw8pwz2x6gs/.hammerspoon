@@ -19,6 +19,7 @@ local COLORS = {
     bg         = {red = 0.08, green = 0.08, blue = 0.08, alpha = 0.93},
     keyDefault = {red = 0.15, green = 0.15, blue = 0.15, alpha = 1},
     keyBound   = {red = 0.18, green = 0.22, blue = 0.35, alpha = 1},
+    keyPressed = {red = 0.30, green = 0.50, blue = 0.85, alpha = 1},
     textDim    = {red = 0.35, green = 0.35, blue = 0.35, alpha = 1},
     textBright = {red = 0.95, green = 0.95, blue = 0.95, alpha = 1},
     textHint   = {red = 0.5,  green = 0.6,  blue = 0.8,  alpha = 1},
@@ -64,6 +65,7 @@ local function computePositions(rows)
             table.insert(positions, {
                 key = keyDef.key:lower(),
                 label = keyDef.label or keyDef.key:upper(),
+                modifier = keyDef.modifier,
                 x = x,
                 y = y,
                 w = pixelW,
@@ -79,9 +81,10 @@ end
 -- Build and show the overlay canvas
 local overlayCanvas = nil
 
-local function showOverlay()
+local function showOverlay(flags)
     if overlayCanvas then return end
 
+    flags = flags or {}
     local bindings = loadBindings()
     local positions = computePositions(layout.rows)
 
@@ -124,21 +127,46 @@ local function showOverlay()
     }
     idx = idx + 1
 
+    -- Modifier flag name mapping: layout modifier -> flags key
+    local modFlagMap = {cmd = "cmd", alt = "alt", ctrl = "ctrl", shift = "shift"}
+
     -- Keys
     for _, pos in ipairs(positions) do
         local binding = bindings[pos.key]
         local isBound = binding ~= nil
+        -- Only left-side modifiers highlight when Hyper is held
+        local leftModMap = {shift_l = "shift", ctrl_l = "ctrl", alt_l = "alt", cmd_l = "cmd"}
+        local isPressed = pos.modifier and leftModMap[pos.modifier] and flags[leftModMap[pos.modifier]]
 
         -- Key background
+        local keyColor = COLORS.keyDefault
+        if isPressed then
+            keyColor = COLORS.keyPressed
+        elseif isBound then
+            keyColor = COLORS.keyBound
+        end
+
         overlayCanvas[idx] = {
             type = "rectangle",
             frame = {x = pos.x + PADDING, y = pos.y + PADDING, w = pos.w, h = pos.h},
             roundedRectRadii = {xRadius = CORNER_RADIUS, yRadius = CORNER_RADIUS},
-            fillColor = isBound and COLORS.keyBound or COLORS.keyDefault,
+            fillColor = keyColor,
         }
         idx = idx + 1
 
-        if isBound then
+        if isPressed then
+            -- Modifier key label (pressed state)
+            overlayCanvas[idx] = {
+                type = "text",
+                frame = {x = pos.x + PADDING, y = pos.y + PADDING + 45, w = pos.w, h = 54},
+                text = styledtext.new(pos.label, {
+                    font = {name = ".AppleSystemUIFont", size = 34},
+                    color = COLORS.textBright,
+                    paragraphStyle = {alignment = "center"},
+                }),
+            }
+            idx = idx + 1
+        elseif isBound then
             local icon = getIcon(binding)
             if icon then
                 -- App icon
@@ -222,7 +250,7 @@ _hyperOverlayTap = hs.eventtap.new({hs.eventtap.event.types.flagsChanged}, funct
     local flags = event:getFlags()
     local isHyper = flags.cmd and flags.alt and flags.ctrl and flags.shift
     if isHyper and not overlayCanvas then
-        local ok, err = pcall(showOverlay)
+        local ok, err = pcall(showOverlay, flags)
         if not ok then print("[hyper_overlay] show error: " .. tostring(err)) end
     elseif not isHyper and overlayCanvas then
         pcall(hideOverlay)
