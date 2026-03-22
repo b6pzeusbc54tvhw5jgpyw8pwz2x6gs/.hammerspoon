@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "hammerspoon": {
+      "source": "plinde/claude-plugins",
+      "sourceType": "github",
+      "computedHash": "4bf2b94033f9a849ae3a7c92cb045d22f73710dca1ba3ec976a1f7fa674d6587"
+    }
+  }
+}
