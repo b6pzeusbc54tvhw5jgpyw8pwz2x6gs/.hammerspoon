@@ -28,6 +28,7 @@ KEYCODE_MAP = {
 MODIFIER_PATTERNS = {
     'hyper': 'Shift-Control-Option-Command',
     'option': 'Option',
+    'cmd_shift': 'Shift-Command',
 }
 
 
@@ -78,6 +79,8 @@ EXTENSION_LABEL_MAP = {
 
 LABEL_MAP.update({
     'windowSwitcher': 'Win Switch',
+    'open-ai-chat-gpt': 'AI Chat',
+    'clipboardHistory': 'Clipboard',
 })
 
 # Friendly app name overrides

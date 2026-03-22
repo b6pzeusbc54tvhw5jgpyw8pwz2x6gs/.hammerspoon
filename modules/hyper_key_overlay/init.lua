@@ -80,8 +80,9 @@ end
 
 -- Overlay title per mode
 local MODE_TITLES = {
-    hyper  = "\u{2303}\u{2325}\u{21E7}\u{2318} Hyper Key Shortcuts",
-    option = "\u{2325} Option Key Shortcuts",
+    hyper     = "\u{2303}\u{2325}\u{21E7}\u{2318} Hyper Key Shortcuts",
+    option    = "\u{2325} Option Key Shortcuts",
+    cmd_shift = "\u{2318}\u{21E7} Command+Shift Shortcuts",
 }
 
 -- Build and show the overlay canvas
@@ -142,6 +143,8 @@ local function showOverlay(flags, mode)
         pressedMods = {shift_l = true, ctrl_l = true, alt_l = true, cmd_l = true}
     elseif mode == "option" then
         pressedMods = {alt_l = true}
+    elseif mode == "cmd_shift" then
+        pressedMods = {cmd_l = true, shift_l = true}
     end
 
     -- Keys
@@ -262,19 +265,24 @@ _hyperOverlayTap = hs.eventtap.new({hs.eventtap.event.types.flagsChanged}, funct
     local flags = event:getFlags()
     local isHyper = flags.cmd and flags.alt and flags.ctrl and flags.shift
     local isOptionOnly = flags.alt and not flags.cmd and not flags.ctrl and not flags.shift
+    local isCmdShift = flags.cmd and flags.shift and not flags.alt and not flags.ctrl
 
+    -- Determine desired mode (most specific first)
+    local desiredMode = nil
     if isHyper then
-        -- Switch to Hyper mode (even if Option overlay is showing)
-        if overlayCanvas and currentMode ~= "hyper" then
+        desiredMode = "hyper"
+    elseif isCmdShift then
+        desiredMode = "cmd_shift"
+    elseif isOptionOnly then
+        desiredMode = "option"
+    end
+
+    if desiredMode then
+        if overlayCanvas and currentMode ~= desiredMode then
             pcall(hideOverlay)
         end
         if not overlayCanvas then
-            local ok, err = pcall(showOverlay, flags, "hyper")
-            if not ok then print("[hyper_overlay] show error: " .. tostring(err)) end
-        end
-    elseif isOptionOnly then
-        if not overlayCanvas then
-            local ok, err = pcall(showOverlay, flags, "option")
+            local ok, err = pcall(showOverlay, flags, desiredMode)
             if not ok then print("[hyper_overlay] show error: " .. tostring(err)) end
         end
     elseif overlayCanvas then
