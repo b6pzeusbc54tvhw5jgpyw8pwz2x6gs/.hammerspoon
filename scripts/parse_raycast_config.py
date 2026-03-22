@@ -21,7 +21,13 @@ KEYCODE_MAP = {
     23: '5', 24: '=', 25: '9', 26: '7', 27: '-', 28: '8', 29: '0',
     30: ']', 31: 'o', 32: 'u', 33: '[', 34: 'i', 35: 'p', 37: 'l',
     38: 'j', 39: ';', 40: 'k', 41: "'", 43: ',', 44: '/', 45: 'n',
-    46: 'm', 47: '.', 49: 'space', 50: '`',
+    46: 'm', 47: '.', 48: 'tab', 49: 'space', 50: '`',
+}
+
+# Modifier combo patterns to extract
+MODIFIER_PATTERNS = {
+    'hyper': 'Shift-Control-Option-Command',
+    'option': 'Option',
 }
 
 
@@ -64,7 +70,15 @@ EXTENSION_LABEL_MAP = {
     'github': 'GitHub',
     'linear': 'Linear',
     'slack-status': 'Slack Status',
+    'screenocr': 'Screen OCR',
+    'konnect': 'People',
+    '1bookmark': 'Bookmarks',
+    'window-switcher': 'Win Switch',
 }
+
+LABEL_MAP.update({
+    'windowSwitcher': 'Win Switch',
+})
 
 # Friendly app name overrides
 APP_LABEL_MAP = {
@@ -100,49 +114,62 @@ def _clean_command_label(key_id):
     return name
 
 
-def extract_bindings(data):
-    """Extract Hyper key bindings from Raycast config data."""
+def _make_binding(item):
+    """Create a binding dict from a Raycast rootSearch item."""
+    item_type = item.get('type', '')
+    path = item.get('path', '')
+    key_id = item.get('key', '')
+    binding = {}
+
+    if item_type == 'systemApp' and path:
+        app_name = path.rstrip('/').split('/')[-1].replace('.app', '')
+        binding['label'] = _clean_app_label(app_name)
+        binding['icon'] = key_id  # bundle ID
+        if '~' in path or 'Chrome Apps' in path:
+            binding['appPath'] = path
+    elif item_type in ('command', 'nodeCommand'):
+        binding['label'] = _clean_command_label(key_id)
+    elif item_type == 'quicklink':
+        if 'slack://' in path:
+            binding['label'] = 'Slack Ch'
+        elif 'notion://' in path or 'notion.so' in path:
+            binding['label'] = 'Notion'
+        elif 'linear://' in path or 'linear.app' in path:
+            binding['label'] = 'Linear'
+        else:
+            binding['label'] = 'Link'
+    elif item_type == 'aiCommand':
+        binding['label'] = 'AI Cmd'
+    else:
+        binding['label'] = key_id[:12]
+
+    return binding
+
+
+def extract_bindings(data, modifier_prefix):
+    """Extract key bindings for a given modifier prefix from Raycast config data."""
     items = data.get('builtin_package_rootSearch', {}).get('rootSearch', [])
     bindings = {}
 
     for item in items:
         hotkey = item.get('hotkey', '')
-        if 'Shift-Control-Option-Command' not in hotkey:
+        # Match exact modifier prefix: "Option-35" matches "Option" but not "Control-Option"
+        parts = hotkey.rsplit('-', 1)
+        if len(parts) != 2:
+            continue
+        mod_part, keycode_str = parts
+        if mod_part != modifier_prefix:
             continue
 
-        keycode = int(hotkey.split('-')[-1])
+        try:
+            keycode = int(keycode_str)
+        except ValueError:
+            continue
         key = KEYCODE_MAP.get(keycode)
         if not key:
             continue
 
-        item_type = item.get('type', '')
-        path = item.get('path', '')
-        key_id = item.get('key', '')
-        binding = {}
-
-        if item_type == 'systemApp' and path:
-            app_name = path.rstrip('/').split('/')[-1].replace('.app', '')
-            binding['label'] = _clean_app_label(app_name)
-            binding['icon'] = key_id  # bundle ID
-            if '~' in path or 'Chrome Apps' in path:
-                binding['appPath'] = path
-        elif item_type in ('command', 'nodeCommand'):
-            binding['label'] = _clean_command_label(key_id)
-        elif item_type == 'quicklink':
-            if 'slack://' in path:
-                binding['label'] = 'Slack Ch'
-            elif 'notion://' in path or 'notion.so' in path:
-                binding['label'] = 'Notion'
-            elif 'linear://' in path or 'linear.app' in path:
-                binding['label'] = 'Linear'
-            else:
-                binding['label'] = 'Link'
-        elif item_type == 'aiCommand':
-            binding['label'] = 'AI Cmd'
-        else:
-            binding['label'] = key_id[:12]
-
-        bindings[key] = binding
+        bindings[key] = _make_binding(item)
 
     return bindings
 
@@ -153,19 +180,21 @@ def main():
         sys.exit(1)
 
     data = decrypt_rayconfig(sys.argv[1], sys.argv[2])
-    bindings = extract_bindings(data)
-
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    output_path = os.path.join(script_dir, '..', 'modules', 'hyper_key_overlay', 'bindings.json')
-    output_path = os.path.normpath(output_path)
+    output_dir = os.path.normpath(os.path.join(script_dir, '..', 'modules', 'hyper_key_overlay'))
 
-    with open(output_path, 'w') as f:
-        json.dump(bindings, f, indent=2, ensure_ascii=False)
+    for mod_name, mod_prefix in MODIFIER_PATTERNS.items():
+        bindings = extract_bindings(data, mod_prefix)
+        output_path = os.path.join(output_dir, f'bindings_{mod_name}.json')
 
-    print(f"Written {len(bindings)} bindings to {output_path}")
-    for key in sorted(bindings):
-        b = bindings[key]
-        print(f"  Hyper+{key.upper():5s} => {b['label']}")
+        with open(output_path, 'w') as f:
+            json.dump(bindings, f, indent=2, ensure_ascii=False)
+
+        label = mod_name.title()
+        print(f"\n[{label}] Written {len(bindings)} bindings to {output_path}")
+        for key in sorted(bindings):
+            b = bindings[key]
+            print(f"  {label}+{key.upper():5s} => {b['label']}")
 
 
 if __name__ == '__main__':

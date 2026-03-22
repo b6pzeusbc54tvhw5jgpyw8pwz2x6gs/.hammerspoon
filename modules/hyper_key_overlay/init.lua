@@ -29,9 +29,9 @@ local COLORS = {
 -- Load keyboard layout
 local layout = require("modules.hyper_key_overlay.layouts." .. LAYOUT_NAME)
 
--- Load bindings from JSON
-local function loadBindings()
-    local path = hs.configdir .. "/modules/hyper_key_overlay/bindings.json"
+-- Load bindings from JSON by modifier name
+local function loadBindings(modName)
+    local path = hs.configdir .. "/modules/hyper_key_overlay/bindings_" .. modName .. ".json"
     local f = io.open(path, "r")
     if not f then return {} end
     local content = f:read("*a")
@@ -78,14 +78,23 @@ local function computePositions(rows)
     return positions
 end
 
+-- Overlay title per mode
+local MODE_TITLES = {
+    hyper  = "\u{2303}\u{2325}\u{21E7}\u{2318} Hyper Key Shortcuts",
+    option = "\u{2325} Option Key Shortcuts",
+}
+
 -- Build and show the overlay canvas
 local overlayCanvas = nil
+local currentMode = nil
 
-local function showOverlay(flags)
+local function showOverlay(flags, mode)
     if overlayCanvas then return end
 
     flags = flags or {}
-    local bindings = loadBindings()
+    mode = mode or "hyper"
+    currentMode = mode
+    local bindings = loadBindings(mode)
     local positions = computePositions(layout.rows)
 
     -- Calculate canvas size
@@ -119,7 +128,7 @@ local function showOverlay(flags)
     overlayCanvas[idx] = {
         type = "text",
         frame = {x = PADDING, y = 12, w = cw - PADDING * 2, h = TITLE_HEIGHT},
-        text = styledtext.new("\u{2303}\u{2325}\u{21E7}\u{2318} Hyper Key Shortcuts", {
+        text = styledtext.new(MODE_TITLES[mode] or "Shortcuts", {
             font = {name = ".AppleSystemUIFont", size = 30},
             color = COLORS.title,
             paragraphStyle = {alignment = "center"},
@@ -127,16 +136,19 @@ local function showOverlay(flags)
     }
     idx = idx + 1
 
-    -- Modifier flag name mapping: layout modifier -> flags key
-    local modFlagMap = {cmd = "cmd", alt = "alt", ctrl = "ctrl", shift = "shift"}
+    -- Which left-side modifiers to highlight per mode
+    local pressedMods = {}
+    if mode == "hyper" then
+        pressedMods = {shift_l = true, ctrl_l = true, alt_l = true, cmd_l = true}
+    elseif mode == "option" then
+        pressedMods = {alt_l = true}
+    end
 
     -- Keys
     for _, pos in ipairs(positions) do
         local binding = bindings[pos.key]
         local isBound = binding ~= nil
-        -- Only left-side modifiers highlight when Hyper is held
-        local leftModMap = {shift_l = "shift", ctrl_l = "ctrl", alt_l = "alt", cmd_l = "cmd"}
-        local isPressed = pos.modifier and leftModMap[pos.modifier] and flags[leftModMap[pos.modifier]]
+        local isPressed = pos.modifier and pressedMods[pos.modifier]
 
         -- Key background
         local keyColor = COLORS.keyDefault
@@ -245,14 +257,27 @@ local function hideOverlay()
     end
 end
 
--- Detect Hyper key (Cmd+Ctrl+Alt+Shift) hold to show/hide overlay
+-- Detect modifier holds to show overlay
 _hyperOverlayTap = hs.eventtap.new({hs.eventtap.event.types.flagsChanged}, function(event)
     local flags = event:getFlags()
     local isHyper = flags.cmd and flags.alt and flags.ctrl and flags.shift
-    if isHyper and not overlayCanvas then
-        local ok, err = pcall(showOverlay, flags)
-        if not ok then print("[hyper_overlay] show error: " .. tostring(err)) end
-    elseif not isHyper and overlayCanvas then
+    local isOptionOnly = flags.alt and not flags.cmd and not flags.ctrl and not flags.shift
+
+    if isHyper then
+        -- Switch to Hyper mode (even if Option overlay is showing)
+        if overlayCanvas and currentMode ~= "hyper" then
+            pcall(hideOverlay)
+        end
+        if not overlayCanvas then
+            local ok, err = pcall(showOverlay, flags, "hyper")
+            if not ok then print("[hyper_overlay] show error: " .. tostring(err)) end
+        end
+    elseif isOptionOnly then
+        if not overlayCanvas then
+            local ok, err = pcall(showOverlay, flags, "option")
+            if not ok then print("[hyper_overlay] show error: " .. tostring(err)) end
+        end
+    elseif overlayCanvas then
         pcall(hideOverlay)
     end
     return false
