@@ -261,7 +261,7 @@ local function hideOverlay()
 end
 
 -- Delay before showing overlay (seconds)
-local SHOW_DELAY = 1.0
+local SHOW_DELAY = 3.0
 local pendingTimer = nil
 local pendingMode = nil
 
