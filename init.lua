@@ -1,3 +1,4 @@
+require('modules.windowfilter_guard') -- 반드시 window.filter 사용 모듈보다 먼저
 require('modules.inputsource_aurora')
 require('modules.korean_alert_on_focus')
 require('modules.switch_inputsource_to_ABC_when_enter_vim_normal_mode')
