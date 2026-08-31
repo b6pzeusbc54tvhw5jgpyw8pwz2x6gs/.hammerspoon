@@ -1,5 +1,5 @@
 require('modules.windowfilter_guard') -- 반드시 window.filter 사용 모듈보다 먼저
-require('modules.inputsource_aurora')
+-- require('modules.inputsource_aurora')
 require('modules.korean_alert_on_focus')
 require('modules.switch_inputsource_to_ABC_when_enter_vim_normal_mode')
 require('modules.window_count_alert')
@@ -9,6 +9,7 @@ require('modules.show_inputsource_flag')
 
 -- World of Warcraft 모듈 로드
 local wow = require("modules.worldofwarcraft")
+require("modules.wow_typeless_chat")
 wow.start()
 
 -- hs.hotkey.bind({"cmd"}, "k", function()
